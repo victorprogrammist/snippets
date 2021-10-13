@@ -1,26 +1,29 @@
-#ifndef ISEMPTY_H
-#define ISEMPTY_H
-
-#include <QString>
+#ifndef __IS_EMPTY_H__
+#define __IS_EMPTY_H__
 
 template <class T>
-concept HasEmpty = requires (T v) {
+concept HasEmptyStdStyle = requires (T v) {
     { v.empty() } -> std::convertible_to<bool>;
 };
 
-template <HasEmpty T>
+template <HasEmptyStdStyle T>
 inline bool isEmpty(const T &v) {
     return v.empty();
 }
 
-template <class T> requires (!HasEmpty<T>)
+template <class T>
+concept HasEmptyQtStyle = requires (T v) {
+    { v.isEmpty() } -> std::convertible_to<bool>;
+};
+
+template <HasEmptyQtStyle T> requires (!HasEmptyStdStyle<T>)
+inline bool isEmpty(const T& v) {
+    return v.isEmpty();
+}
+
+template <class T> requires (!HasEmptyStdStyle<T> && !HasEmptyQtStyle<T>)
 inline bool isEmpty(const T &v) {
     return v == T();
 }
 
-template <>
-inline bool isEmpty<QString>(const QString &v) {
-    return v.isEmpty();
-}
-
-#endif // ISEMPTY_H
+#endif // __IS_EMPTY_H__
